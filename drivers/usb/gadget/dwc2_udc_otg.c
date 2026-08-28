@@ -1024,6 +1024,19 @@ static int dwc2_udc_otg_of_to_plat(struct udevice *dev)
 		set_params(plat);
 	}
 
+	/*
+	 * Amlogic GXBB: this UDC sits on a plain Type-A/OTG port with no
+	 * separable ID line, so the OTG FSM stays in host role (GOTGCTL:
+	 * conidsts=1, currmod=0) and the peripheral path never activates.
+	 * The stm32 params only set this under force_b_session_valid; make
+	 * it common so u-boot,force-b-session-valid on any node gets the
+	 * same "force device mode" (GUSBCFG bit30, FDMOD) treatment,
+	 * mirroring what the Amlogic v2_burn stack does explicitly
+	 * (disable HNP/SRP, force device init, soft-connect).
+	 */
+	if (plat->force_b_session_valid)
+		plat->usb_gusbcfg |= 1 << 30; /* FDMOD: Force device mode */
+
 	return 0;
 }
 
@@ -1197,6 +1210,11 @@ static const struct usb_gadget_generic_ops dwc2_gadget_ops = {
 };
 
 static const struct udevice_id dwc2_udc_otg_ids[] = {
+	/* Amlogic GXBB: peripheral-only binding for usb@c9000000, see
+	 * meson-gxbb-p201-u-boot.dtsi (compatible stripped of "snps,dwc2").
+	 * This entry is intentionally specific so only the gadget driver
+	 * claims that node while the USB host driver keeps usb1. */
+	{ .compatible = "amlogic,meson-gxbb-usb" },
 	{ .compatible = "snps,dwc2" },
 	{ .compatible = "brcm,bcm2835-usb" },
 	{ .compatible = "st,stm32mp15-hsotg",

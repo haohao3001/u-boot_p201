@@ -5,3 +5,27 @@
  */
 
 #include "meson-gxbb-u-boot.dtsi"
+
+/*
+ * USB0 as peripheral-only (U-Boot stage):
+ * - compatible: strip "snps,dwc2" so the USB host driver (UCLASS_USB)
+ *   no longer matches this node; only the dwc2 gadget driver
+ *   (UCLASS_USB_GADGET_GENERIC, which matches "amlogic,meson-gxbb-usb"
+ *   after the driver tweak) binds it.
+ * - dr_mode: pin "peripheral" so the role is fixed device, no OTG
+ *   switching and no VBUS output by the controller.
+ * usb1 is intentionally left untouched (stays host-capable, matches
+ * upstream semantics).
+ *
+ * NOTE: the kernel boots from a FIT image carrying its own kernel-side
+ * DTB, so these overlays affect only the U-Boot stage and never leak
+ * into the kernel (no ft_board_setup() repair is needed).
+ */
+&usb0 {
+	compatible = "amlogic,meson-gxbb-usb";
+	dr_mode = "peripheral";
+	/* P201 USB0 is an OTG/Type-A port with no ID pin (A-A cable):
+	 * force the DWC2 FSM into device role (GUSBCFG.FDMOD) instead of
+	 * leaving it parked in host mode (currmod=0, no SOF, no enum). */
+	u-boot,force-b-session-valid;
+};
