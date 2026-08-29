@@ -147,6 +147,25 @@ config SPL_EFI_PARTITION
 	default y if EFI_PARTITION
 	select SPL_PARTITIONS
 
+config AML_PARTITION
+	bool "Enable Amlogic EPT (Emmc Partition Table) partition table"
+	default y if ARCH_MESON
+	select PARTITIONS
+	help
+	  Say Y here to use the Amlogic EPT/MPT partition table found on
+	  Amlogic SoC platforms (GX family, AXG, TXL, TXLX, ...). The
+	  binary table is stored inside the eMMC "reserved" partition at
+	  byte offset 36MB, tagged with the "MPT" magic. It carries the
+	  logical partitions such as bootloader, cache, env, system, etc.
+
+	  If unsure, say N.
+
+config SPL_AML_PARTITION
+	bool "Enable Amlogic EPT partition table for SPL"
+	depends on SPL
+	default y if AML_PARTITION
+	select SPL_PARTITIONS
+
 config PARTITION_UUIDS
 	bool "Enable support of UUID for partition"
 	depends on PARTITIONS
