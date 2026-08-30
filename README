@@ -2,6 +2,9 @@
 #
 # (C) Copyright 2000 - 2013
 # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+Notice:
+该fork专精于SumaVision-Q5，构建请使用make p201_china_mobile_defconfig
+========
 
 Summary:
 ========
